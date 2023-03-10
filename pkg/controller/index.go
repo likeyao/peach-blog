@@ -8,17 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type IndexController struct {
-	Path string
-}
-
-func (i *IndexController) Index(c *gin.Context) {
-	//试一下读取文件名
-	articles := readArticles(i.Path)
-
-	c.HTML(http.StatusOK, "index.html", gin.H{
-		"list": articles,
-	})
+func Index(path string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		articles := readArticles(path)
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"list": articles,
+		})
+	}
 }
 
 func readArticles(path string) []article {
@@ -29,25 +25,40 @@ func readArticles(path string) []article {
 	}
 
 	for _, v := range dirs {
-		fullPath := path + "/" + v.Name()
 		if !v.IsDir() {
-			result = append(result, article{
-				Name:    parseAritcleTitle(v.Name()),
-				Content: readArticle(fullPath),
-				Outline: readArticle(fullPath),
-				Time:    parseTime(v),
-			})
+			result = append(result, readArticle(path, v.Name()))
 		}
 
 	}
 	return result
 }
 
+func readArticle(path string, filename string) article {
+	fullPath := path + "/" + filename
+
+	file, err := os.Open(fullPath)
+	if err != nil {
+		panic(err)
+	}
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	return article{
+		Name:    parseAritcleTitle(filename),
+		Content: content(fullPath),
+		Outline: content(fullPath),
+		Time:    getModifyTime(fileInfo),
+	}
+}
+
 func parseAritcleTitle(filename string) string {
 	return filename[:strings.Index(filename, ".")]
 }
 
-func readArticle(filename string) string {
+func content(filename string) string {
 	content, err := os.ReadFile(filename)
 	if err != nil {
 		panic(err)
@@ -56,11 +67,7 @@ func readArticle(filename string) string {
 	return string(content)
 }
 
-func parseTime(dir os.DirEntry) string {
-	info, err := dir.Info()
-	if err != nil {
-		panic(err)
-	}
+func getModifyTime(info os.FileInfo) string {
 	return info.ModTime().Format("2006-01-02 15:04:05")
 }
 

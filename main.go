@@ -13,12 +13,10 @@ func main() {
 	flag.StringVar(&path, "p", "/Users/likeyao/demo/blogs", "存放博客文章的文件夹")
 	flag.Parse()
 
-	index := controller.IndexController{Path: path}
-
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
-	r.GET("/", index.Index)
-	r.GET("/article/detail", controller.ArticelDetail)
+	r.GET("/", controller.Index(path))
+	r.GET("/article/detail", controller.ArticelDetail(path))
 	r.Static("/assets", "assets")
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

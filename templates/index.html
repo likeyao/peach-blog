@@ -24,13 +24,13 @@
     </nav>
 
     <div class="container" style="margin-top:10px">
-      <div class="row">
+      <div class="row row-cols-1 row-cols-md-3 g-4">
         {{range .list}}  
         <div class="col">
           <div class="card mb-3" style="max-width: 540px;">
             <div class="row g-0">
               <div class="card-body">
-                <h5 class="card-title"><a href="/article/detail">{{.Name}}</a></h5>
+                <h5 class="card-title"><a href="/article/detail?title={{.Name}}">{{.Name}}</a></h5>
                 <p class="card-text">{{.Content}}</p>
                 <p class="card-text"><small class="text-muted">更新时间：{{.Time}}</small></p>
               </div>
